@@ -75,6 +75,21 @@ public class CEnvia {
         }
     }
     
+    static void borrarArchivos(File[] archivos) throws InterruptedException{
+        for (File archivo : archivos) {
+            Thread.sleep(500);
+            if (archivo.isDirectory()) {
+                borrarArchivos(archivo.listFiles());
+            }
+            System.out.println(archivo.getName());
+            if(archivo.delete())
+                System.out.println("Archivo borrado");
+            else
+                System.out.println("No se pudo borrar el archivo");
+
+        }
+    }
+    
     static String getPath(File archivo) throws Exception {
         String nombre = archivo.getPath().replace("\\","/");
         nombre = nombre.split("archivos/")[1];
@@ -108,12 +123,16 @@ public class CEnvia {
                     enviar_archivos(archivos);
                 }
             } else if(entradaTeclado.contains("borrar")){
-                File archivo = new File(new java.io.File(".").getCanonicalPath() + "/archivos/" + archivoNombre); 
+                File archivo = new File(new java.io.File(".").getCanonicalPath() + "/archivos/" + archivoNombre);
+                if(archivo.isDirectory()){
+                    borrarArchivos(archivo.listFiles());
+                }
                 if (archivo.delete()) { 
                   System.out.println("Archivo borrado: " + archivo.getName());
                 } else {
                   System.out.println("Error al borrar el archivo.");
                 } 
+                
             }
         } catch(Exception e){
             e.printStackTrace();

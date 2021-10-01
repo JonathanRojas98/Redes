@@ -1,0 +1,1104 @@
+
+import java.awt.Rectangle;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/**
+ *
+ * @author jonat
+ */
+public class Tablero extends javax.swing.JFrame {
+    static String nombre = "";
+    static int ownTable[][] = new int[10][10];
+    static int oponentTable[][] = new int[10][10];
+    static int disponibles[] = new int[10];
+    HashSet<Nave> naves = new HashSet<Nave>();
+    static DatagramSocket dS;
+    static DatagramSocket dSClient;
+    static boolean conectado = false;
+    ReceiverThread hiloRecepcion = new ReceiverThread();
+    static String nombreCliente;
+    static String mensajesRandom[] = new String[10];
+    static int turno = -1;
+    static int tiros = 3;
+    static boolean finalizo = false;
+    static int navesDestruidas = 0;
+    JTable ownJTable = new JTable();
+    JTable oponentJTable = new JTable();
+    
+    void actualizarTablero(){
+        /**
+        * Aquí se instanciará la tabla
+        */
+       
+       ownJTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+       jScrollPane1.setViewportView(ownJTable);
+       DefaultTableModel model=new DefaultTableModel(){ };
+       //ASSIGN THE MODEL TO TABLE
+       ownJTable.setModel(model);
+       model.addColumn("");
+       for(int i = 1; i <= 10; i++){
+           model.addColumn(i-1);
+       }
+       for(int i = 0; i < 10; i++){
+           model.addRow(new Object[0]);
+           for(int j = 0; j <= 10; j++){
+               if(j == 0)
+                   model.setValueAt(i , i, j);
+                   //model.setValueAt((char) (i + 65) , i, j);
+               //else if(i != 0)
+               else
+                   model.setValueAt(ownTable[i][j-1], i, j);
+           }
+       }
+
+       /**
+        * Aquí se instanció la tabla
+        */
+       /**
+        * Aquí se instanciará la tabla
+        */
+       
+       oponentJTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+       jScrollPane2.setViewportView(oponentJTable);
+       DefaultTableModel modeloponent = new DefaultTableModel(){ };
+       //ASSIGN THE MODEL TO TABLE
+       oponentJTable.setModel(modeloponent);
+       modeloponent.addColumn("");
+       for(int i = 0; i < 10; i++){
+           modeloponent.addColumn(i);
+       }
+       for(int i = 0; i < 10; i++){
+           modeloponent.addRow(new Object[0]);
+           for(int j = 0; j <= 10; j++){
+               if(j == 0)
+                   modeloponent.setValueAt(i, i, j);
+               //else if(i != 0)
+               else
+                   modeloponent.setValueAt(oponentTable[i][j-1], i, j);
+           }
+       }
+
+       /**
+        * Aquí se instanció la tabla
+        */
+    }
+    
+    /**
+     * Creates new form Tablero
+     */
+    public Tablero() {
+        initComponents();
+        for(int i = 0; i < 10; i++)
+            for(int j = 0; j < 10; j++){
+                ownTable[i][j] = 0;
+                oponentTable[i][j] = 0;
+            }
+        //Submarinos
+        disponibles[0] = 1;
+        disponibles[1] = 1;
+        disponibles[2] = 1;
+        disponibles[3] = 1;
+        //Destructores
+        disponibles[4] = 2;
+        disponibles[5] = 2;
+        disponibles[6] = 2;
+        //Cruceros
+        disponibles[7] = 3;
+        disponibles[8] = 3;
+        //Acorazados
+        disponibles[9] = 4;
+        mensajesRandom[0] = "Me la vas a pelar, humano";
+        mensajesRandom[1] = "Manos me van a sobrar!";
+        mensajesRandom[2] = "JAJAJA DAS PENA";
+        mensajesRandom[3] = "HOLA, ME GUSTAS";
+        mensajesRandom[4] = "Asi es, no tienes oportunidad";
+        mensajesRandom[5] = "Jonathan es muy guapo";
+        mensajesRandom[6] = "Vas perdiendo!";
+        mensajesRandom[7] = "Soy un robot demasiado bueno";
+        mensajesRandom[8] = "Bienvenido a tu... muerte!";
+        mensajesRandom[9] = "Dile adios a tus navecitas jiji";
+        jButton2.setVisible(false);
+        jButton5.setEnabled(false);
+        actualizarTablero();
+        
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jDialog1 = new javax.swing.JDialog();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jTextField2 = new javax.swing.JTextField();
+        jTextField3 = new javax.swing.JTextField();
+        jTextField4 = new javax.swing.JTextField();
+        jTextField5 = new javax.swing.JTextField();
+        jButton3 = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jTextField1 = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jButton4 = new javax.swing.JButton();
+        jTextField6 = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        jTextField7 = new javax.swing.JTextField();
+        jTextField8 = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jButton5 = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+
+        jLabel1.setText("Disponibles");
+
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel2.setText("Coordenadas");
+
+        jLabel3.setText("Ax");
+
+        jLabel4.setText("Ay");
+
+        jLabel5.setText("Bx");
+
+        jLabel6.setText("By");
+
+        jButton3.setText("Crear");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(56, 56, 56)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addGap(18, 18, 18)
+                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                        .addComponent(jLabel3)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(jLabel4))
+                                    .addComponent(jLabel2))
+                                .addGap(46, 46, 46)
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel6))))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(48, 48, 48)
+                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(31, 31, 31)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(29, 29, 29)
+                                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(34, 34, 34)
+                        .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(67, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(46, 46, 46)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jLabel2)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(46, 46, 46)
+                .addComponent(jButton3)
+                .addContainerGap(31, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(jDialog1.getContentPane());
+        jDialog1.getContentPane().setLayout(jDialog1Layout);
+        jDialog1Layout.setHorizontalGroup(
+            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        jDialog1Layout.setVerticalGroup(
+            jDialog1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(102, 102, 102));
+
+        jButton1.setText("Conectar");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("Actualizar tablero");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton4.setText("Agregar nave");
+        jButton4.setToolTipText("");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
+        jLabel7.setText("Mensajes");
+
+        jLabel8.setText("x");
+
+        jLabel9.setText("y");
+
+        jButton5.setText("¡Fuego!");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
+        jButton6.setText("Jugar");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
+
+        jLabel10.setText("Naves destruidas");
+
+        jLabel11.setText("0");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(83, 83, 83)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 551, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(138, 138, 138)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(64, 64, 64)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addComponent(jButton4)
+                                    .addGap(228, 228, 228)
+                                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 158, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(81, 81, 81)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel7)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 386, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                                        .addGap(219, 219, 219)
+                                                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGap(45, 45, 45))
+                                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                        .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGap(35, 35, 35)))
+                                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                                        .addGap(20, 20, 20)
+                                                        .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(jButton5)
+                                                .addGap(32, 32, 32)))
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(4, 4, 4)
+                                                .addComponent(jLabel10)
+                                                .addGap(0, 0, Short.MAX_VALUE)))))
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel11)))))
+                .addGap(24, 24, 24))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(50, 50, 50)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE))
+                .addGap(70, 70, 70)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(32, 32, 32)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jButton2)
+                                    .addComponent(jButton4))
+                                .addGap(18, 18, 18))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel7)
+                                .addGap(5, 5, 5)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton6)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(80, 80, 80)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel9))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton5)
+                            .addComponent(jLabel10)
+                            .addComponent(jLabel11))))
+                .addGap(68, 68, 68))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        //BOTÓN ACTUALIZAR TABLERO!
+        actualizarTablero();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        //BOTON CONECTAR
+        nombre = jTextField1.getText();
+        System.out.println(nombre);
+        //CONEXION COMO SERVIDOR
+        if(nombre.contains("servidor")){
+            System.out.println("Conectado como servidor");
+            try {
+                dS = new DatagramSocket(8888);
+                dS.setReuseAddress(true);
+                //InetAddress inetAddress = InetAddress.getByName("localhost");  
+                int iport = 8888;
+                //dS.connect(inetAddress, iport);  
+                jTextField6.setText("Servidor conectado, a localhost:" + iport);
+                conectado = true;
+            } catch (SocketException ex) {
+                Logger.getLogger(Tablero.class.getName()).log(Level.SEVERE, null, ex);
+            } /*catch (UnknownHostException ex) {
+                Logger.getLogger(Tablero.class.getName()).log(Level.SEVERE, null, ex);
+            }*/
+            //CONEXION COMO CLIENTE
+        } else if (nombre.length() > 0){
+            try {
+                String host="127.0.0.1";
+                int pto=8888;
+                //InetAddress dst = InetAddress.getByName(host);
+                dSClient = new DatagramSocket(8889);
+                dSClient.setReuseAddress(true);
+                //socket = new Socket("127.0.0.1", 8887);
+                jTextField6.setText("Cliente conectado, en 127.0.0.1:" + pto);
+                conectado = true;
+            } catch (IOException ex) {
+                Logger.getLogger(Tablero.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        if(conectado){
+            hiloRecepcion.start();
+            jButton1.setEnabled(false);
+        }
+        //INICIAR ALEATORIAMENTE TODO EL TABLERO Y BLOQUEAR BOTONES
+        if(nombre.contains("servidor") && conectado){
+            for(int i = 0; i < disponibles.length; i++){
+                //Posicion 1 = horizontal
+                //Posicion 2 = vertical
+                int posicion = (Math.random() <= 0.5) ? 1 : 2;
+                int Ax = -1;
+                int Ay = -1;
+                int Bx = -1;
+                int By = -1;
+                int rand10 = (int) (Math.random() * 10);
+                if(posicion == 1){
+                    Ay = rand10;
+                    By = rand10;
+                    Ax = (int) (Math.random() * 10);
+                    Bx = Ax < 5 ? Ax + disponibles[i] - 1 : Ax - disponibles[i] + 1;    
+                } else if(posicion == 2){
+                    Ax = rand10;
+                    Bx = rand10;
+                    Ay = (int) (Math.random() * 10);
+                    By = Ax < 5 ? Ay + disponibles[i] - 1 : Ay - disponibles[i] + 1;   
+                }
+                Nave nave = new Nave(disponibles[i], Ax, Ay, Bx, By);
+                if(nave.cabeEnTablero(ownTable)){
+                    ownTable = nave.ponerEnTablero(ownTable);
+                    naves.add(nave);
+                    actualizarTablero();
+                }
+                else{
+                    i--;
+                }
+            }
+            //BLOQUEAR BOTONES
+            jButton1.setEnabled(false);
+            jButton2.setEnabled(false);
+            jButton3.setEnabled(false);
+            jButton4.setEnabled(false);
+            jButton6.setEnabled(false);
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        //BOTON AGREGAR NAVE
+        String ids[] = new String[disponibles.length];
+        for(int i = 0; i < disponibles.length; i++)
+            ids[i] = String.valueOf(disponibles[i]);
+        
+        
+        jComboBox1.setModel(new DefaultComboBoxModel(ids));
+        
+        
+        jDialog1.setBounds(new Rectangle(300, 300));
+        jDialog1.setVisible(true);
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        //BOTON CREAR NAVE PARA EL TABLERO
+        int tipo = Integer.valueOf(jComboBox1.getSelectedItem().toString());
+        int Ax = Integer.valueOf(jTextField2.getText());
+        int Ay = Integer.valueOf(jTextField3.getText());
+        int Bx = Integer.valueOf(jTextField4.getText());
+        int By = Integer.valueOf(jTextField5.getText());
+        Nave nave = new Nave(tipo, Ax, Ay, Bx, By);
+        if(nave.cabeEnTablero(ownTable)){
+            naves.add(nave);
+            ownTable = nave.ponerEnTablero(ownTable);
+            actualizarTablero();
+            //Nuevo array sin la nave disponible
+            int index = -1;
+            boolean hay = false;
+            for(int i = 0; i < disponibles.length; i++){
+                index ++;
+                if(disponibles[i] == tipo){
+                    hay = true;
+                    break;
+                }
+            }
+            if(hay){
+                int nuevoDisponibles[] = new int[disponibles.length - 1];
+                int contador = 0;
+                for(int i = 0; i < disponibles.length; i++){
+                    if(i == index)
+                        continue;
+                    nuevoDisponibles[contador] = disponibles[i];
+                    contador++;
+                }
+                disponibles = nuevoDisponibles;
+            }
+            //Actualizar el combobox
+            String ids[] = new String[disponibles.length];
+            for(int i = 0; i < disponibles.length; i++)
+                ids[i] = String.valueOf(disponibles[i]);
+            jComboBox1.setModel(new DefaultComboBoxModel(ids));
+            if(disponibles.length <= 0)
+                jButton4.setEnabled(false);
+        } else
+            JOptionPane.showMessageDialog(this, "No se ha podido crear la nave, revisa tus parámetros");
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        //BOTON JUGAR
+        if(!nombre.contains("servidor") && conectado){
+            try {
+                sendMessage(new Mensaje(2, "iniciar", nombre), nombre);
+            } catch (Exception ex) {
+                Logger.getLogger(Tablero.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        //BOTON DISPARAR!!
+        int x = Integer.valueOf(jTextField7.getText());
+        int y = Integer.valueOf(jTextField8.getText());
+        
+        try{
+            System.out.println("FUEGO!");
+            sendMessage(new Mensaje(1, "tiro!", nombre, x, y), nombre);
+            /*Mensaje recibido = receiveMessage(nombre);
+            if(recibido.nombre.contains(nombreCliente) && recibido.message.contains("fallo")){
+                tiros = 3;
+                turno = 1;
+                oponentTable[x][y] = 1;
+                //sendMessage(new Mensaje(3, "Tu turno rey", nombre), nombre);
+                sendMessage(new Mensaje(2, "servidor", nombre), nombre);
+            } else if(recibido.nombre.contains(nombreCliente) && recibido.message.contains("atinado")){
+                String coordenadas[] = receiveMessage(nombre).getMessage().split(" ");
+                int Ax = Integer.valueOf(coordenadas[0]);
+                int Ay = Integer.valueOf(coordenadas[1]);
+                int Bx = Integer.valueOf(coordenadas[2]);
+                int By = Integer.valueOf(coordenadas[3]);
+                Nave naveEliminada = new Nave(Ax, Ay, Bx, By);
+                oponentTable = naveEliminada.eliminarDelTablero(oponentTable);
+                //sendMessage(new Mensaje(3, mensajesRandom[(int) (Math.random() * 10)], nombre), nombre);
+                
+            }
+            tiros--;*/
+        } catch(Exception e){
+            
+        }
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    
+    
+    public void manageServerMessage(Mensaje recibido) throws Exception {
+        switch(recibido.getTipo()){
+            //Disparo
+            
+            case 1:
+                System.out.println("Tiro X: " + recibido.getX() + " Y: " + recibido.getY());
+                if(recibido.getNombre().contains(nombreCliente)){
+                    boolean leDieron = false;
+                    for(Nave nave: naves){
+                        System.out.println("Nave a analiza Ax: " + nave.getAx() + " Ay: " + nave.getAy());
+                        if(nave.esVivo() && nave.teDieron(recibido.x, recibido.y)){
+                            System.out.println("El servidor recibio dano colateral");
+                            //TE DIERON!
+                            nave.morir();
+                            ownTable = nave.eliminarDelTablero(ownTable);
+                            sendMessage(new Mensaje(2, "atinado", nombre), nombre);
+                            sendMessage(new Mensaje(3, nave.getTipo() + " " + nave.getAx() + " " + nave.getAy() + " " +nave.getBx() + " " +nave.getBy() , nombre), nombre);
+                            leDieron = true;
+                            actualizarTablero();
+                        }
+                    }
+                    if(!leDieron){
+                        //NO TE DIERON!
+                        sendMessage(new Mensaje(2, "fallo", nombre, recibido.x, recibido.y), nombre);
+                        sendMessage(new Mensaje(3, "Mi turno papirrin", nombre), nombre);
+                        tiros = 3;
+                        turno = 1;
+                    }
+                }
+                break;
+            //Instruccion
+            case 2:
+                if(recibido.getMessage().contains("iniciar")){
+                    jTextField6.setText("Jugando partida con: " + recibido.getNombre());
+                    nombreCliente = recibido.getNombre();
+                    sendMessage(new Mensaje(2, "iniciar", nombre), nombre);
+                    sendMessage(new Mensaje(3, mensajesRandom[(int) (Math.random() * 10)], nombre), nombre);
+                    Thread.sleep(10000);
+                    //Quien inicia?
+                    //1 servidor, 2 cliente
+                    turno = (Math.random() <= 0.5) ? 1 : 2;
+                    if(turno == 1){
+                        sendMessage(new Mensaje(3, "Mi turno papi", nombre), nombre);
+                        sendMessage(new Mensaje(2, "servidor", nombre), nombre);
+                        turno = 1;
+                        tiros = 3;
+                    }
+                    else {
+                        sendMessage(new Mensaje(3, "Tu turno rey", nombre), nombre);
+                        sendMessage(new Mensaje(2, "cliente", nombre), nombre);
+                        turno = 2;
+                        tiros = 3;
+                    }
+                } else if(recibido.getMessage().contains("cliente") && recibido.getNombre().contains(nombreCliente)){
+                    turno = 2;
+                    tiros = 3;
+                } else if(recibido.getMessage().contains("servidor") && recibido.getNombre().contains(nombreCliente)){
+                    sendMessage(new Mensaje(3, "Mi turno papito!", nombre), nombre);
+                    turno = 1;
+                    tiros = 3;
+                } else if(recibido.getMessage().contains("gane") && recibido.getNombre().contains(nombreCliente)){
+                    sendMessage(new Mensaje(3, "Méndigo suertudo, para la otra te gano rey", nombre), nombre);
+                    turno = -1;
+                    tiros = 3;
+                } else if(recibido.getMessage().contains("perdi") && recibido.getNombre().contains(nombreCliente)){
+                    sendMessage(new Mensaje(3, "Perdiste papi!", nombre), nombre);
+                } else if(recibido.getMessage().contains("fallo") && recibido.getNombre().contains(nombreCliente)){
+                    System.out.println("Te equivocaste servidor en Ax: " + recibido.x + " Ay: " + recibido.y);
+                    oponentTable[recibido.y][recibido.x] = 1;
+                    sendMessage(new Mensaje(3, "Tu turno papi", nombre), nombre);
+                    sendMessage(new Mensaje(2, "cliente", nombre), nombre);
+                    turno = 2;
+                    tiros = 3;
+                    actualizarTablero();
+                }
+                if(recibido.getNombre().contains(nombreCliente) && recibido.getMessage().contains("atinado")){
+                    Mensaje mensj = receiveMessage(nombre);
+                    String naveCarac[];
+                    naveCarac = mensj.getMessage().split(" ");
+                    System.out.println("*" + naveCarac[0] + "*");
+                    int tipo = Integer.valueOf(naveCarac[0]);
+                    int Ax = Integer.valueOf(naveCarac[1]);
+                    int Ay = Integer.valueOf(naveCarac[2]);
+                    int Bx = Integer.valueOf(naveCarac[3]);
+                    int By = Integer.valueOf(naveCarac[4]);
+                    
+                    for(int i = 0; i < naveCarac.length; i++)
+                        System.out.println(naveCarac[i]);
+                    Nave naveDestruida = new Nave(tipo, Ax, Ay, Bx, By);
+                    oponentTable = naveDestruida.eliminarDelTablero(oponentTable);
+                    //turno = 1;
+                    //jButton5.setEnabled(true);
+                    tiros--;
+                    navesDestruidas++;
+                    jLabel11.setText(String.valueOf(navesDestruidas));
+                    if(navesDestruidas >= 10){
+                        tiros = 3;
+                        turno = -1;
+                        //jButton5.setEnabled(false);
+                        sendMessage(new Mensaje(3, "JAJAJA AHORA YO FUI EL VICTORIOSO", nombre), nombre);
+                        sendMessage(new Mensaje(2, "gane", nombre), nombre);
+                        break;
+                    }
+                    System.out.println("Tiros: " + tiros);
+                    if(tiros == 0){
+                        //Ya atinaste 3, le toca al cliente
+                        tiros = 3;
+                        turno = 2;
+                        jButton5.setEnabled(false);
+                        sendMessage(new Mensaje(2, "servidor", nombre), nombre);
+                    }
+                
+                    actualizarTablero();
+                }
+                break;
+            //Mensaje
+            case 3:
+                break;
+        }
+        
+        System.out.println("Mensaje recibido: " + recibido.getMessage());
+    }
+    public void manageClientMessage(Mensaje recibido) throws Exception {
+        switch(recibido.getTipo()){
+            //Disparo
+            case 1:
+                System.out.println("Tiro X: " + recibido.getX() + " Y: " + recibido.getY());
+                if(recibido.getNombre().contains(nombreCliente)){
+                    boolean leDieron = false;
+                    for(Nave nave : naves){
+                        if(nave.esVivo() && nave.teDieron(recibido.x, recibido.y)){
+                            //TE DIERON!
+                            nave.morir();
+                            ownTable = nave.eliminarDelTablero(ownTable);
+                            sendMessage(new Mensaje(2, "atinado", nombre), nombre);
+                            sendMessage(new Mensaje(3, nave.getTipo() + " " + nave.getAx() + " " + nave.getAy() + " " +nave.getBx() + " " +nave.getBy() , nombre), nombre);
+                            leDieron = true;
+                            actualizarTablero();
+                            Thread.sleep(10000);
+                            
+                        }
+                    }
+                    if(!leDieron){
+                        //NO TE DIERON!
+                        sendMessage(new Mensaje(2, "fallo", nombre, recibido.x, recibido.y), nombre);
+                        tiros = 3;
+                        turno = 2;
+                    }
+                }
+                break;
+            //Instruccion
+            case 2:
+                if(recibido.getMessage().contains("iniciar")){
+                    jTextField6.setText("Jugando partida con: " + recibido.getNombre());
+                    nombreCliente = recibido.getNombre();
+                    jButton6.setEnabled(false);
+                    //sendMessage(new Mensaje(3, mensajesRandom[(int) (Math.random() * 10)], nombre), nombre);
+                }
+                if(recibido.getNombre().contains(nombreCliente) && recibido.getMessage().contains("servidor")){
+                    tiros = 3;
+                    turno = 1;
+                    jButton5.setEnabled(false);
+                }
+                if(recibido.getNombre().contains(nombreCliente) && recibido.getMessage().contains("cliente")){
+                    tiros = 3;
+                    turno = 2;
+                    jButton5.setEnabled(true);
+                }
+                if(recibido.getNombre().contains(nombreCliente) && recibido.getMessage().contains("fallo")){
+                    System.out.println("Te equivocaste papu " + nombre);
+                    oponentTable[recibido.y][recibido.x] = 1;
+                    tiros = 3;
+                    turno = 1;
+                    jButton5.setEnabled(false);
+                    actualizarTablero();
+                } else if(recibido.getMessage().contains("gane") && recibido.getNombre().contains(nombreCliente)){
+                    //sendMessage(new Mensaje(3, "Méndigo suertudo, para la otra te gano rey", nombre), nombre);
+                    jButton5.setEnabled(false);
+                    turno = -1;
+                    tiros = 3;
+                }
+                if(recibido.getNombre().contains(nombreCliente) && recibido.getMessage().contains("atinado")){
+                    Mensaje mensj = receiveMessage(nombre);
+                    String naveCarac[];
+                    naveCarac = mensj.getMessage().split(" ");
+                    System.out.println("*" + naveCarac[0] + "*");
+                    int tipo = Integer.valueOf(naveCarac[0]);
+                    int Ax = Integer.valueOf(naveCarac[1]);
+                    int Ay = Integer.valueOf(naveCarac[2]);
+                    int Bx = Integer.valueOf(naveCarac[3]);
+                    int By = Integer.valueOf(naveCarac[4]);
+                    
+                    for(int i = 0; i < naveCarac.length; i++)
+                        System.out.println(naveCarac[i]);
+                    Nave naveDestruida = new Nave(tipo, Ax, Ay, Bx, By);
+                    oponentTable = naveDestruida.eliminarDelTablero(oponentTable);
+                    //turno = 1;
+                    jButton5.setEnabled(true);
+                    tiros--;
+                    navesDestruidas++;
+                    jLabel11.setText(String.valueOf(navesDestruidas));
+                    if(navesDestruidas >= 10){
+                        tiros = 3;
+                        turno = -1;
+                        jButton5.setEnabled(false);
+                        sendMessage(new Mensaje(2, "gane", nombre), nombre);
+                        break;
+                    }
+                    System.out.println("Tiros: " + tiros);
+                    if(tiros == 0){
+                        //Ya atinaste 3, le toca al servidor
+                        tiros = 3;
+                        turno = 1;
+                        jButton5.setEnabled(false);
+                        sendMessage(new Mensaje(2, "servidor", nombre), nombre);
+                    }
+                
+                    actualizarTablero();
+                }
+                break;
+            //Mensaje
+            case 3:
+                if(recibido.getNombre().contains(nombreCliente)){
+                    jTextField6.setText("Mensaje de (" + recibido.getNombre()+ "): " + recibido.getMessage());
+                }
+                break;
+        }
+        System.out.println("Mensaje recibido: " + recibido.getMessage());
+        
+    }
+    
+    class ReceiverThread extends Thread{
+        //Socket conexion;
+        ReceiverThread(/*Socket conexion*/){
+            //this.conexion = conexion;
+        }
+        public void run(){
+            while(true){
+                try{
+                    Thread.sleep(1000);
+                    if(nombre.contains("servidor") && conectado){
+                        Mensaje recibido = receiveMessage(nombre);
+                        if(recibido != null)
+                            manageServerMessage(recibido);
+                    } else if(nombre.length() > 0 && conectado){
+                        Mensaje recibido = receiveMessage(nombre);
+                        if(recibido != null)
+                            manageClientMessage(recibido);
+                    }
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Tablero.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception ex) {
+                    Logger.getLogger(Tablero.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+    
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) throws Exception {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Tablero.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Tablero.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Tablero.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Tablero.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        //USAR CONNECT PARA EL DATAGRAMA
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Tablero().setVisible(true);
+            }
+        });
+        
+        while(true){
+            boolean todas_muertas = true;
+            /*if(naves.size() > 0){
+                for(Nave nave : naves)
+                    if(nave.esVivo())
+                        todas_muertas = false;
+                if(todas_muertas){
+                    if(nombre.contains("servidor")){
+                        sendMessage(new Mensaje(3, "Ganaste mi papucho!", nombre), nombre);
+                        break;
+                    }
+                    else if (nombre.length() > 0){
+                        sendMessage(new Mensaje(2, "perdi", nombre), nombre);
+                        break;
+                    }
+                }
+            }*/
+            
+            if(tiros > 0){
+                Thread.sleep(4000);
+                
+                //Esto se activa cuando inicia el juego
+                System.out.println("Turno: " + turno);
+                if(turno == 1 && nombre.contains("servidor")){
+                    System.out.println("Tiros: " + tiros);
+                    System.out.println("Bot tirando");
+                    tiroDelBot();
+                } 
+            } else{
+                System.out.println("Tiros: " + tiros);
+                if(turno == 1 && nombre.contains("servidor")){
+                    sendMessage(new Mensaje(3, "Tu turno rey", nombre), nombre);
+                    sendMessage(new Mensaje(2, "cliente", nombre), nombre);
+                } else if(turno == 1 && nombre.contains("servidor")){
+                    sendMessage(new Mensaje(2, "fallo", nombre), nombre);
+                }
+            }
+            
+            /*Thread.sleep(1000);
+            if(nombre.contains("servidor") && conectado){
+                sendMessage(new Mensaje(1, "hola desde servidor"), nombre);
+            } else if(nombre.length() > 0 && conectado){
+                sendMessage(new Mensaje(1, "hola"), nombre);
+            }*/
+        }
+    }
+    
+    static public void tiroDelBot() throws Exception{
+        if(nombre.contains("servidor")){
+            HashSet<Tiro> tirosPosibles=new HashSet<Tiro>();
+            for(int i = 0; i < 10; i++)
+                for(int j = 0; j < 10; j++){
+                    if(oponentTable[i][j] == 0){
+                        tirosPosibles.add(new Tiro(i, j));
+                    }
+                }
+            int index = new Random().nextInt(tirosPosibles.size());
+            int i = 0;
+            Tiro tiroFinal = null;
+            for(Tiro tiro : tirosPosibles){
+                if(index == i){
+                    tiroFinal = tiro;
+                    break;
+                }
+                i++;
+            }
+            if(tiroFinal != null){
+                
+                sendMessage(new Mensaje(1, "tiro!", nombre, tiroFinal.x, tiroFinal.y), nombre);
+                //sendMessage(new Mensaje(1, "tiro!", nombre, 1, 1), nombre);
+                /*Mensaje recibido = receiveMessage(nombre);
+                if(recibido.nombre.contains(nombreCliente) && recibido.message.contains("fallo")){
+                    tiros = 3;
+                    turno = 2;
+                    oponentTable[tiroFinal.x][tiroFinal.y] = 1;
+                    sendMessage(new Mensaje(3, "Tu turno rey", nombre), nombre);
+                    sendMessage(new Mensaje(2, "cliente", nombre), nombre);
+                } else if(recibido.nombre.contains(nombreCliente) && recibido.message.contains("atinado")){
+                    String coordenadas[] = receiveMessage(nombre).getMessage().split(" ");
+                    int Ax = Integer.valueOf(coordenadas[0]);
+                    int Ay = Integer.valueOf(coordenadas[1]);
+                    int Bx = Integer.valueOf(coordenadas[2]);
+                    int By = Integer.valueOf(coordenadas[3]);
+                    Nave naveEliminada = new Nave(Ax, Ay, Bx, By);
+                    oponentTable = naveEliminada.eliminarDelTablero(oponentTable);
+                    sendMessage(new Mensaje(3, mensajesRandom[(int) (Math.random() * 10)], nombre), nombre);
+                    tiros--;
+                }*/
+            }
+        }
+    }
+    
+    static public Mensaje receiveMessage(String para) throws Exception{
+        Mensaje mensj = null;
+        if(para.contains("servidor")){
+            DatagramPacket p = new DatagramPacket(new byte[65535],65535);
+            dS.receive(p);
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(p.getData()));
+            mensj = (Mensaje) ois.readObject();
+        } else if(para.length() > 0){
+            DatagramPacket p = new DatagramPacket(new byte[65535],65535);
+            dSClient.receive(p);
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(p.getData()));
+            mensj = (Mensaje) ois.readObject();
+        }
+        return mensj;
+    }
+    
+    static public void sendMessage(Mensaje mensj, String de) throws Exception{
+        if(de.contains("servidor")){
+            DatagramSocket dSsend = new DatagramSocket();
+            ByteArrayOutputStream baos= new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(mensj);
+            oos.flush();
+            byte[] b = baos.toByteArray();
+            DatagramPacket p = new DatagramPacket(b, b.length, InetAddress.getByName("127.0.0.1"), 8889);
+            dSsend.send(p);
+            dSsend.close();
+        } else if(de.length() > 0){
+            DatagramSocket dSClientsend = new DatagramSocket();
+            ByteArrayOutputStream baos= new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(mensj);
+            oos.flush();
+            byte[] b = baos.toByteArray();
+            DatagramPacket p = new DatagramPacket(b,b.length,InetAddress.getByName("127.0.0.1"), 8888);
+            dSClientsend.send(p);
+            dSClientsend.close();
+        }
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
+    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JDialog jDialog1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField jTextField3;
+    private javax.swing.JTextField jTextField4;
+    private javax.swing.JTextField jTextField5;
+    private javax.swing.JTextField jTextField6;
+    private javax.swing.JTextField jTextField7;
+    private javax.swing.JTextField jTextField8;
+    // End of variables declaration//GEN-END:variables
+}
